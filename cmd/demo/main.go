@@ -24,7 +24,7 @@ func curPath() string {
 func main() {
 	dataPath := curPath() + "/data"
 	iconPath := dataPath + "/favicon.ico"
-	name := "Aria2 WebUI"
+	name := "Webview2 Example"
 	ebd, _ := fs.Sub(embedFS, "static")
 	fServer := http.FileServer(http.FS(ebd))
 	go http.ListenAndServe("127.0.0.1:65533", fServer)
