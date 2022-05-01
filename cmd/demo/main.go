@@ -24,17 +24,17 @@ func curPath() string {
 func main() {
 	dataPath := curPath() + "/data"
 	iconPath := dataPath + "/favicon.ico"
-	name := "Webview2 example"
+	name := "Aria2 WebUI"
 	ebd, _ := fs.Sub(embedFS, "static")
 	fServer := http.FileServer(http.FS(ebd))
 	go http.ListenAndServe("127.0.0.1:65533", fServer)
 	icon, _ := fs.ReadFile(ebd, "favicon.ico")
 	os.Mkdir(curPath()+"/data", 0777)
 	os.WriteFile(iconPath, icon, 0777)
-	w := NewWithOptions(WebViewOptions{
+	w := webview2.NewWithOptions(webview2.WebViewOptions{
 		Debug:    false,
 		DataPath: dataPath,
-		WindowOptions: WindowOptions{
+		WindowOptions: webview2.WindowOptions{
 			Title:  name,
 			Width:  1440,
 			Height: 900,
