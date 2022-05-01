@@ -61,7 +61,7 @@ type WindowOptions struct {
 	Title  string
 	Width  int
 	Height int
-	Icon   string
+	IconId int
 }
 
 type WebViewOptions struct {
@@ -260,13 +260,17 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 	var hinstance windows.Handle
 	_ = windows.GetModuleHandleEx(0, nil, &hinstance)
 
+	// original codes
 	// icow, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCxIcon)
 	// icoh, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCyIcon)
-
 	// icon, _, _ := w32.User32LoadImageW.Call(uintptr(hinstance), 32512, icow, icoh, 0)
 
-	iconPath, _ := windows.UTF16PtrFromString(opts.Icon)
-	icon, _, _ := w32.User32LoadImageW.Call(0, uintptr(unsafe.Pointer(iconPath)), 1, 0, 0, 0x00000050)
+	// load icon from standalone file
+	// iconPath, _ := windows.UTF16PtrFromString(opts.Icon)
+	// icon, _, _ := w32.User32LoadImageW.Call(0, uintptr(unsafe.Pointer(iconPath)), 1, 0, 0, 0x00000050)
+
+	// load icon from resource
+	icon, _, _ := w32.User32LoadImageW.Call(uintptr(hinstance), uintptr(opts.IconId), 1, 0, 0, 0x8040)
 
 	className, _ := windows.UTF16PtrFromString("webview2")
 	wc := w32.WndClassExW{
