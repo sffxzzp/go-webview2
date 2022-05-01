@@ -44,6 +44,11 @@ var (
 )
 
 const (
+	SM_CXSCREEN = 0
+	SM_CYSCREEN = 1
+)
+
+const (
 	SystemMetricsCxIcon = 11
 	SystemMetricsCyIcon = 12
 )

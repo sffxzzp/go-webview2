@@ -58,7 +58,10 @@ type webview struct {
 }
 
 type WindowOptions struct {
-	Title string
+	Title  string
+	Width  int
+	Height int
+	Icon   string
 }
 
 type WebViewOptions struct {
@@ -96,7 +99,6 @@ func NewWithOptions(options WebViewOptions) WebView {
 
 	chromium := edge.NewChromium()
 	chromium.MessageCallback = w.msgcb
-	chromium.Debug = options.Debug
 	chromium.DataPath = options.DataPath
 	chromium.SetPermission(edge.CoreWebView2PermissionKindClipboardRead, edge.CoreWebView2PermissionStateAllow)
 
@@ -105,6 +107,14 @@ func NewWithOptions(options WebViewOptions) WebView {
 	if !w.CreateWithOptions(options.WindowOptions) {
 		return nil
 	}
+
+	settings, _ := chromium.GetSettings()
+	settings.PutAreDefaultContextMenusEnabled(options.Debug)
+	settings.PutAreDevToolsEnabled(options.Debug)
+	settings.PutIsZoomControlEnabled(false)
+	settings.PutIsStatusBarEnabled(false)
+	settings.PutIsWebMessageEnabled(false)
+
 	return w
 }
 
@@ -250,12 +260,15 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 	var hinstance windows.Handle
 	_ = windows.GetModuleHandleEx(0, nil, &hinstance)
 
-	icow, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCxIcon)
-	icoh, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCyIcon)
+	// icow, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCxIcon)
+	// icoh, _, _ := w32.User32GetSystemMetrics.Call(w32.SystemMetricsCyIcon)
 
-	icon, _, _ := w32.User32LoadImageW.Call(uintptr(hinstance), 32512, icow, icoh, 0)
+	// icon, _, _ := w32.User32LoadImageW.Call(uintptr(hinstance), 32512, icow, icoh, 0)
 
-	className, _ := windows.UTF16PtrFromString("webview")
+	iconPath, _ := windows.UTF16PtrFromString(opts.Icon)
+	icon, _, _ := w32.User32LoadImageW.Call(0, uintptr(unsafe.Pointer(iconPath)), 1, 0, 0, 0x00000050)
+
+	className, _ := windows.UTF16PtrFromString("webview2")
 	wc := w32.WndClassExW{
 		CbSize:        uint32(unsafe.Sizeof(w32.WndClassExW{})),
 		HInstance:     hinstance,
@@ -267,15 +280,30 @@ func (w *webview) CreateWithOptions(opts WindowOptions) bool {
 	_, _, _ = w32.User32RegisterClassExW.Call(uintptr(unsafe.Pointer(&wc)))
 
 	windowName, _ := windows.UTF16PtrFromString(opts.Title)
+	windowWidth := int32(opts.Width)
+	if windowWidth < 640 {
+		windowWidth = 640
+	}
+	windowHeight := int32(opts.Height)
+	if windowHeight < 480 {
+		windowHeight = 480
+	}
+	sw, _, _ := w32.User32GetSystemMetrics.Call(w32.SM_CXSCREEN)
+	screenWidth := int32(sw)
+	sh, _, _ := w32.User32GetSystemMetrics.Call(w32.SM_CYSCREEN)
+	screenHeight := int32(sh)
+	posX := uintptr(screenWidth-windowWidth) / 2
+	posY := uintptr(screenHeight-windowHeight) / 2
+
 	w.hwnd, _, _ = w32.User32CreateWindowExW.Call(
 		0,
 		uintptr(unsafe.Pointer(className)),
 		uintptr(unsafe.Pointer(windowName)),
-		0xCF0000,   // WS_OVERLAPPEDWINDOW
-		0x80000000, // CW_USEDEFAULT
-		0x80000000, // CW_USEDEFAULT
-		640,
-		480,
+		0xCF0000, // WS_OVERLAPPEDWINDOW
+		posX,
+		posY,
+		uintptr(windowWidth),
+		uintptr(windowHeight),
 		0,
 		0,
 		uintptr(hinstance),

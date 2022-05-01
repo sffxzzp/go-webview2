@@ -31,7 +31,6 @@ type Chromium struct {
 	environment *ICoreWebView2Environment
 
 	// Settings
-	Debug    bool
 	DataPath string
 
 	// permissions
@@ -315,7 +314,7 @@ func (e *Chromium) AcceleratorKeyPressed(sender *ICoreWebView2Controller, args *
 	return 0
 }
 
-func (e *Chromium) GetSettings() (*ICoreWebViewSettings, error) {
+func (e *Chromium) GetSettings() (*ICoreWebView2Settings, error) {
 	return e.webview.GetSettings()
 }
 
