@@ -109,9 +109,20 @@ func NewWithOptions(options WebViewOptions) WebView {
 		return nil
 	}
 
-	settings, _ := chromium.GetSettings()
-	settings.PutAreDefaultContextMenusEnabled(options.Debug)
-	settings.PutAreDevToolsEnabled(options.Debug)
+	settings, err := chromium.GetSettings()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// disable context menu
+	err = settings.PutAreDefaultContextMenusEnabled(options.Debug)
+	if err != nil {
+		log.Fatal(err)
+	}
+	// disable developer tools
+	err = settings.PutAreDevToolsEnabled(options.Debug)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return w
 }
