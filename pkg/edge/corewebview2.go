@@ -6,12 +6,11 @@ package edge
 import (
 	"log"
 	"runtime"
-	"syscall"
 	"unsafe"
 
 	"github.com/sffxzzp/go-webview2/internal/w32"
-	"github.com/sffxzzp/go-webview2/webviewloader"
 
+	"github.com/sffxzzp/go-webview2/webviewloader"
 	"golang.org/x/sys/windows"
 )
 
@@ -55,21 +54,6 @@ func createCoreWebView2EnvironmentWithOptions(browserExecutableFolder, userDataF
 		environmentOptions,
 		uintptr(unsafe.Pointer(environmentCompletedHandle)),
 	)
-}
-
-// ComProc stores a COM procedure.
-type ComProc uintptr
-
-// NewComProc creates a new COM proc from a Go function.
-func NewComProc(fn interface{}) ComProc {
-	return ComProc(windows.NewCallback(fn))
-}
-
-//go:uintptrescapes
-// Call calls a COM procedure.
-func (p ComProc) Call(a ...uintptr) (r1, r2 uintptr, lastErr error) {
-	// Can now use syscall.SyscallN in go 1.18.1
-	return syscall.SyscallN(uintptr(p), a...)
 }
 
 // IUnknown
@@ -154,9 +138,9 @@ type ICoreWebView2 struct {
 	vtbl *iCoreWebView2Vtbl
 }
 
-func (i *ICoreWebView2) GetSettings() (*ICoreWebView2Settings, error) {
+func (i *ICoreWebView2) GetSettings() (*ICoreWebViewSettings, error) {
 	var err error
-	var settings *ICoreWebView2Settings
+	var settings *ICoreWebViewSettings
 	_, _, err = i.vtbl.GetSettings.Call(
 		uintptr(unsafe.Pointer(i)),
 		uintptr(unsafe.Pointer(&settings)),
